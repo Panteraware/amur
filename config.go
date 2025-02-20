@@ -11,6 +11,8 @@ type ConfigStruct struct {
 	TimeZone     string
 	Port         int
 	UseRedis     bool
+	ConvertHLS   bool
+	VideoScale   string
 	RedisHost    string
 	RedisPass    string
 	RedisDb      int
@@ -23,6 +25,8 @@ func ConfigNew() {
 	Config = &ConfigStruct{
 		TimeZone:     getEnv("TZ", "UTC"),
 		UseRedis:     getEnvAsBool("USE_REDIS", false),
+		ConvertHLS:   getEnvAsBool("CONVERT_HLS", false),
+		VideoScale:   getEnv("VIDEO_SCALE", "720"),
 		Port:         getEnvAsInt("PORT", 3000),
 		RedisHost:    getEnv("REDIS_HOST", "localhost:6379"),
 		RedisPass:    getEnv("REDIS_PASS", ""),
