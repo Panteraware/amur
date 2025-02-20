@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 )
 
@@ -47,6 +48,34 @@ func ServeFile(c *gin.Context) {
 				log.Error().Err(err).Str("path", filePath).Str("route", "serve").Msg("error resizing image")
 			}
 		}()
+	} else if strings.Contains(mType.String(), "video") {
+		if Config.ConvertHLS {
+			go func() {
+				err := ConvertToHLS(filePath)
+				if err != nil {
+					log.Error().Err(err).Str("path", filePath).Str("route", "serve").Msg("error converting to hls")
+				}
+			}()
+		}
+
+		if len(Config.VideoScale) > 0 {
+			fullPath, _ := filepath.Abs(filePath)
+			//output, err := exec.Command(fmt.Sprintf("ffprobe -v error -select_streams v -show_entries stream=height -of csv=p=0:s=x \"%s\"", fullPath)).Output()
+			//if err != nil {
+			//	log.Error().Err(err).Str("path", filePath).Str("route", "serve").Msg("error executing ffprobe")
+			//}
+			//
+			//videoScale, err := strconv.Atoi(string(output))
+
+			for _, scale := range GetVideoScales(1080) {
+				go func() {
+					err := ScaleVideo(fullPath, scale)
+					if err != nil {
+						log.Error().Err(err).Str("path", filePath).Str("route", "serve").Msg("error scaling video")
+					}
+				}()
+			}
+		}
 	}
 
 	log.Info().Str("mType", mType.String()).Str("filePath", filePath).Str("user-agent", c.Request.UserAgent()).Str("ip", c.RemoteIP()).Msg("mimetype")
