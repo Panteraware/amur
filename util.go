@@ -97,3 +97,30 @@ func CheckFileExtension(filePath string) string {
 
 	return ""
 }
+
+func GetVideoScales(size int) []string {
+	initialArray := strings.Split(Config.VideoScale, ",")
+	endArray := make([]string, 0)
+
+	for _, v := range initialArray {
+		if v == "2160" && size >= 2160 {
+			endArray = append(endArray, "3840:2160")
+		} else if v == "1440" && size >= 1440 {
+			endArray = append(endArray, "2560:1440")
+		} else if v == "1080" && size >= 1080 {
+			endArray = append(endArray, "1920:1080")
+		} else if v == "720" && size >= 720 {
+			endArray = append(endArray, "1280:720")
+		} else if v == "540" && size >= 540 {
+			endArray = append(endArray, "960:540")
+		} else if v == "480" && size >= 480 {
+			endArray = append(endArray, "854:480")
+		} else if v == "360" && size >= 360 {
+			endArray = append(endArray, "640:360")
+		} else if v == "240" && size >= 240 {
+			endArray = append(endArray, "426:240")
+		}
+	}
+
+	return endArray
+}
