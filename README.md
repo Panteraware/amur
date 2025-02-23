@@ -47,10 +47,10 @@ To properly work the following are **REQUIRED**:
 
 
 ## Credits
-- [Logging](github.com/rs/zerolog)
-- [Gin](github.com/gin-gonic/gin)
-- [WebP Encoding](github.com/nickalie/go-webpbin)
-- [MimeType](github.com/gabriel-vasile/mimetype)
-- [UUID](github.com/google/uuid)
-- [ENV](github.com/joho/godotenv)
+- [Logging](https://github.com/rs/zerolog)
+- [Gin](https://github.com/gin-gonic/gin)
+- [WebP Encoding](https://github.com/nickalie/go-webpbin)
+- [MimeType](https://github.com/gabriel-vasile/mimetype)
+- [UUID](https://github.com/google/uuid)
+- [ENV](https://github.com/joho/godotenv)
 - [FFmpeg Wrapper](https://github.com/u2takey/ffmpeg-go)
