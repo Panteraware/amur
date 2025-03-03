@@ -33,6 +33,7 @@ func main() {
 
 	e.Use(middleware.Recover())
 	e.Use(middleware.Logger())
+	e.Use(middleware.CORSWithConfig(Config.Cors))
 
 	log.Info().Str("version", version).Str("commit", commit).Str("date", date)
 
