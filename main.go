@@ -1,12 +1,18 @@
 package main
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	"net/http"
+	"os"
+	"os/signal"
+	"time"
 )
 
 var (
@@ -21,6 +27,8 @@ func init() {
 	}
 
 	ConfigNew()
+
+	NewAsynqClient()
 }
 
 func main() {
@@ -39,5 +47,23 @@ func main() {
 
 	log.Info().Str("version", version).Str("commit", commit).Str("date", date)
 
-	e.Logger.Fatal(e.Start(fmt.Sprintf(":%d", Config.Port)))
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer stop()
+
+	go func() {
+		NewAsynqServer()
+	}()
+
+	go func() {
+		if err := e.Start(fmt.Sprintf(":%d", Config.Port)); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			e.Logger.Fatal("shutting down the server")
+		}
+	}()
+
+	<-ctx.Done()
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if err := e.Shutdown(ctx); err != nil {
+		e.Logger.Fatal(err)
+	}
 }
