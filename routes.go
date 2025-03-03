@@ -34,20 +34,28 @@ func ServeFile(c echo.Context) error {
 
 	if strings.Contains(mType.String(), "image") {
 		if !strings.HasSuffix(filePath, ".webp") {
-			go func() {
-				_, err := EncodeWebP(filePath)
-				if err != nil {
-					log.Error().Err(err).Str("path", filePath).Str("route", "serve").Msg("error encoding webp")
-				}
-			}()
+			task, err := NewImageOptimizationTask(filePath)
+			if err != nil {
+				log.Error().Err(err).Str("path", filePath).Str("route", "serve").Str("task", TypeImageOptimization).Msg("error creating task")
+			}
+			info, err := AsynqClient.Enqueue(task)
+			if err != nil {
+				log.Error().Err(err).Str("path", filePath).Str("route", "serve").Str("enqueue", TypeImageOptimization).Msg("error enqueuing task")
+			}
+
+			log.Info().Str("id", info.ID).Str("task", TypeImageOptimization).Msg("queued task")
 		}
 
-		go func() {
-			_, err := ResizeImage(filePath)
-			if err != nil {
-				log.Error().Err(err).Str("path", filePath).Str("route", "serve").Msg("error resizing image")
-			}
-		}()
+		task, err := NewImageThumbnailTask(filePath)
+		if err != nil {
+			log.Error().Err(err).Str("path", filePath).Str("route", "serve").Str("task", TypeImageThumbnail).Msg("error creating task")
+		}
+		info, err := AsynqClient.Enqueue(task)
+		if err != nil {
+			log.Error().Err(err).Str("path", filePath).Str("route", "serve").Str("enqueue", TypeImageThumbnail).Msg("error enqueuing task")
+		}
+
+		log.Info().Str("id", info.ID).Str("task", TypeImageThumbnail).Msg("queued task")
 	} else if strings.Contains(mType.String(), "video") {
 		if Config.ConvertHLS {
 			go func() {
@@ -136,7 +144,7 @@ func UploadFile(c echo.Context) error {
 	thumbUrl := ""
 
 	if CheckFileExtension(fileName) == "image" {
-		_, err := ResizeImage(filePath)
+		_, err := ThumbnailImage(filePath)
 
 		if err != nil {
 			log.Error().Err(err).Str("path", filePath).Str("util", "resize").Msg("error resizing file")
