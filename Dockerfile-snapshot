@@ -1,0 +1,27 @@
+FROM golang:1.24 AS builder
+
+# Define the build arguments
+ARG GIT_VERSION
+ARG GIT_COMMIT
+ARG GIT_DATE
+
+# Optionally set them as environment variables
+ENV GIT_VERSION=${GIT_VERSION}
+ENV GIT_COMMIT=${GIT_COMMIT}
+ENV GIT_DATE=${GIT_DATE}
+
+WORKDIR /go/src/app
+COPY main.go .
+RUN go build -o cdn -ldflags="-X 'main.version=${GIT_VERSION}' -X 'main.commit=${GIT_COMMIT}' -X 'main.date=${GIT_DATE}'" main.go
+
+FROM debian:bookworm
+
+RUN apt-get update
+RUN apt-get install -y webp ffmpeg
+
+ENV SKIP_DOWNLOAD=true
+ENV VENDOR_PATH=/usr/bin
+
+COPY --from=builder /go/src/app/cdn /usr/bin/cdn
+
+ENTRYPOINT ["/usr/bin/cdn"]
