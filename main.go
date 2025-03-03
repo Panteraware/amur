@@ -12,6 +12,12 @@ import (
 	"time"
 )
 
+var (
+	version = "dev"
+	commit  = "none"
+	date    = "unknown"
+)
+
 func init() {
 	if err := godotenv.Load(); err != nil {
 		log.Error().Err(err).Msg("Error loading .env file")
@@ -26,6 +32,8 @@ func main() {
 	r := engine()
 
 	r.Use(gin.Recovery())
+
+	log.Info().Str("version", version).Str("commit", commit).Str("date", date)
 
 	if err := engine().Run(fmt.Sprintf(":%d", Config.Port)); err != nil {
 		log.Err(err).Msg("Error starting server")
