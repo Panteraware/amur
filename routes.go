@@ -78,8 +78,6 @@ func ServeFile(c echo.Context) error {
 		}
 	}
 
-	log.Info().Str("mType", mType.String()).Str("filePath", filePath).Str("user-agent", c.Request().UserAgent()).Str("ip", c.RealIP()).Msg("mimetype")
-
 	buf, err := os.ReadFile(filePath)
 	if err != nil {
 		log.Error().Err(err).Str("path", "").Msg("error reading file")
