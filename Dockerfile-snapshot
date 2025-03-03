@@ -12,7 +12,7 @@ ENV GIT_DATE=${GIT_DATE}
 
 WORKDIR /go/src/app
 COPY . .
-RUN go build -o cdn -ldflags="-X 'main.version=${GIT_VERSION}' -X 'main.commit=${GIT_COMMIT}' -X 'main.date=${GIT_DATE}'" .
+RUN go build -o amur -ldflags="-X 'main.version=${GIT_VERSION}' -X 'main.commit=${GIT_COMMIT}' -X 'main.date=${GIT_DATE}'" .
 
 FROM debian:bookworm
 
@@ -22,6 +22,6 @@ RUN apt-get install -y webp ffmpeg
 ENV SKIP_DOWNLOAD=true
 ENV VENDOR_PATH=/usr/bin
 
-COPY --from=builder /go/src/app/cdn /usr/bin/cdn
+COPY --from=builder /go/src/app/amur /usr/bin/amur
 
-ENTRYPOINT ["/usr/bin/cdn"]
+ENTRYPOINT ["/usr/bin/amur"]
