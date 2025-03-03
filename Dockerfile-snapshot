@@ -11,8 +11,8 @@ ENV GIT_COMMIT=${GIT_COMMIT}
 ENV GIT_DATE=${GIT_DATE}
 
 WORKDIR /go/src/app
-COPY main.go .
-RUN go build -o cdn -ldflags="-X 'main.version=${GIT_VERSION}' -X 'main.commit=${GIT_COMMIT}' -X 'main.date=${GIT_DATE}'" main.go
+COPY . .
+RUN go build -o cdn -ldflags="-X 'main.version=${GIT_VERSION}' -X 'main.commit=${GIT_COMMIT}' -X 'main.date=${GIT_DATE}'" .
 
 FROM debian:bookworm
 
