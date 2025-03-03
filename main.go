@@ -31,6 +31,7 @@ func main() {
 	e.RouteNotFound("/*", ServeFile)
 	e.POST("/upload", UploadFile)
 
+	e.IPExtractor = echo.ExtractIPFromXFFHeader()
 	e.Use(middleware.RequestID())
 	e.Use(middleware.Recover())
 	e.Use(middleware.Logger())
