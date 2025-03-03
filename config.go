@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/labstack/echo/v4/middleware"
 	"os"
 	"strconv"
 	"strings"
@@ -19,6 +20,7 @@ type ConfigStruct struct {
 	Domain       string
 	UploadKey    string
 	PublicFolder string
+	Cors         middleware.CORSConfig
 }
 
 func ConfigNew() {
@@ -34,6 +36,11 @@ func ConfigNew() {
 		Domain:       getEnv("DOMAIN", "localhost"),
 		UploadKey:    getEnv("UPLOAD_KEY", ""),
 		PublicFolder: getEnv("PUBLIC_FOLDER", "/public/"),
+		Cors: middleware.CORSConfig{
+			AllowOrigins:     strings.Split(getEnv("CORS_ALLOW_ORIGINS", "localhost"), ","),
+			AllowHeaders:     strings.Split(getEnv("CORS_ALLOW_HEADERS", "GET,HEAD,POST,PUT,PATCH,DELETE"), ","),
+			AllowCredentials: getEnvAsBool("CORS_ALLOW_CREDENTIALS", true),
+		},
 	}
 
 	if strings.Contains(Config.Domain, "localhost") {
