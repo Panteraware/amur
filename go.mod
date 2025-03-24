@@ -9,7 +9,7 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/labstack/echo/v4 v4.13.3
 	github.com/nickalie/go-webpbin v0.0.0-20220110095747-f10016bf2dc1
-	github.com/rs/zerolog v1.33.0
+	github.com/rs/zerolog v1.34.0
 	github.com/u2takey/ffmpeg-go v0.5.0
 	golang.org/x/image v0.24.0
 )
