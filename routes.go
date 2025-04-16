@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
-	"github.com/gabriel-vasile/mimetype"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/rs/zerolog/log"
 	"io"
+	"net/http"
 	"net/url"
 	"os"
 	"path"
@@ -24,15 +24,9 @@ func ServeFile(c echo.Context) error {
 
 	filePath = path.Clean(filePath + result)
 
-	mType, err := mimetype.DetectFile(filePath)
+	mType := http.DetectContentType(ReadLimitedBytes(filePath, 512))
 
-	if err != nil {
-		log.Error().Err(err).Str("path", "").Msg("error detecting mimetype")
-
-		return c.NoContent(500)
-	}
-
-	if strings.Contains(mType.String(), "image") {
+	if strings.Contains(mType, "image") {
 		if !strings.HasSuffix(filePath, ".webp") {
 			task, err := NewImageOptimizationTask(filePath)
 			if err != nil {
@@ -56,7 +50,7 @@ func ServeFile(c echo.Context) error {
 		}
 
 		log.Info().Str("id", info.ID).Str("task", TypeImageThumbnail).Msg("queued task")
-	} else if strings.Contains(mType.String(), "video") {
+	} else if strings.Contains(mType, "video") {
 		if Config.ConvertHLS {
 			go func() {
 				err := ConvertToHLS(filePath)
@@ -86,14 +80,7 @@ func ServeFile(c echo.Context) error {
 		}
 	}
 
-	buf, err := os.ReadFile(filePath)
-	if err != nil {
-		log.Error().Err(err).Str("path", "").Msg("error reading file")
-
-		return c.NoContent(500)
-	}
-
-	return c.Blob(200, mType.String(), buf)
+	return c.File(filePath)
 }
 
 func UploadFile(c echo.Context) error {
