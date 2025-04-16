@@ -192,3 +192,20 @@ func GetVideoScales(size int) []string {
 
 	return endArray
 }
+
+func ReadLimitedBytes(path string, n int) []byte {
+	file, err := os.Open(path)
+
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
+
+	bytes := make([]byte, n)
+	m, err := file.Read(bytes)
+	if err != nil {
+		panic(err)
+	}
+
+	return bytes[:m]
+}
