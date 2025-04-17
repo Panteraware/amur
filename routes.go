@@ -51,7 +51,7 @@ func ServeFile(c echo.Context) error {
 
 		log.Info().Str("id", info.ID).Str("task", TypeImageThumbnail).Msg("queued task")
 	} else if strings.Contains(mType, "video") {
-		if Config.ConvertHLS {
+		if Config.CanConvertHLS {
 			go func() {
 				err := ConvertToHLS(filePath)
 				if err != nil {
@@ -60,7 +60,7 @@ func ServeFile(c echo.Context) error {
 			}()
 		}
 
-		if len(Config.VideoScale) > 0 {
+		if Config.CanScaleVideo && len(Config.VideoScale) > 0 {
 			fullPath, _ := filepath.Abs(filePath)
 			//output, err := exec.Command(fmt.Sprintf("ffprobe -v error -select_streams v -show_entries stream=height -of csv=p=0:s=x \"%s\"", fullPath)).Output()
 			//if err != nil {
