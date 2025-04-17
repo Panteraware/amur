@@ -9,33 +9,35 @@ import (
 )
 
 type ConfigStruct struct {
-	TimeZone     string
-	Port         int
-	UseRedis     bool
-	ConvertHLS   bool
-	VideoScale   string
-	RedisHost    string
-	RedisPass    string
-	RedisDb      int
-	Domain       string
-	UploadKey    string
-	PublicFolder string
-	Cors         middleware.CORSConfig
+	TimeZone      string
+	Port          int
+	UseRedis      bool
+	CanConvertHLS bool
+	CanScaleVideo bool
+	VideoScale    string
+	RedisHost     string
+	RedisPass     string
+	RedisDb       int
+	Domain        string
+	UploadKey     string
+	PublicFolder  string
+	Cors          middleware.CORSConfig
 }
 
 func ConfigNew() {
 	Config = &ConfigStruct{
-		TimeZone:     getEnv("TZ", "UTC"),
-		UseRedis:     getEnvAsBool("USE_REDIS", false),
-		ConvertHLS:   getEnvAsBool("CONVERT_HLS", false),
-		VideoScale:   getEnv("VIDEO_SCALE", "720"),
-		Port:         getEnvAsInt("PORT", 3000),
-		RedisHost:    getEnv("REDIS_HOST", "localhost:6379"),
-		RedisPass:    getEnv("REDIS_PASS", ""),
-		RedisDb:      getEnvAsInt("REDIS_DB", 1),
-		Domain:       getEnv("DOMAIN", "localhost"),
-		UploadKey:    getEnv("UPLOAD_KEY", ""),
-		PublicFolder: getEnv("PUBLIC_FOLDER", "/public/"),
+		TimeZone:      getEnv("TZ", "UTC"),
+		UseRedis:      getEnvAsBool("USE_REDIS", false),
+		CanConvertHLS: getEnvAsBool("CAN_CONVERT_HLS", false),
+		CanScaleVideo: getEnvAsBool("CAN_SCALE_VIDEO", false),
+		VideoScale:    getEnv("VIDEO_SCALE", "720"),
+		Port:          getEnvAsInt("PORT", 3000),
+		RedisHost:     getEnv("REDIS_HOST", "localhost:6379"),
+		RedisPass:     getEnv("REDIS_PASS", ""),
+		RedisDb:       getEnvAsInt("REDIS_DB", 1),
+		Domain:        getEnv("DOMAIN", "localhost"),
+		UploadKey:     getEnv("UPLOAD_KEY", ""),
+		PublicFolder:  getEnv("PUBLIC_FOLDER", "/public/"),
 		Cors: middleware.CORSConfig{
 			AllowOrigins:     strings.Split(getEnv("CORS_ALLOW_ORIGINS", "localhost"), ","),
 			AllowHeaders:     strings.Split(getEnv("CORS_ALLOW_HEADERS", "GET,HEAD,POST,PUT,PATCH,DELETE"), ","),
