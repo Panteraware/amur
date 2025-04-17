@@ -27,29 +27,31 @@ func ServeFile(c echo.Context) error {
 	mType := http.DetectContentType(ReadLimitedBytes(filePath, 512))
 
 	if strings.Contains(mType, "image") {
-		if !strings.HasSuffix(filePath, ".webp") {
-			task, err := NewImageOptimizationTask(filePath)
+		if Config.UseRedis {
+			if !strings.HasSuffix(filePath, ".webp") {
+				task, err := NewImageOptimizationTask(filePath)
+				if err != nil {
+					log.Error().Err(err).Str("path", filePath).Str("route", "serve").Str("task", TypeImageOptimization).Msg("error creating task")
+				}
+				info, err := AsynqClient.Enqueue(task)
+				if err != nil {
+					log.Error().Err(err).Str("path", filePath).Str("route", "serve").Str("enqueue", TypeImageOptimization).Msg("error enqueuing task")
+				}
+
+				log.Info().Str("id", info.ID).Str("task", TypeImageOptimization).Msg("queued task")
+			}
+
+			task, err := NewImageThumbnailTask(filePath)
 			if err != nil {
-				log.Error().Err(err).Str("path", filePath).Str("route", "serve").Str("task", TypeImageOptimization).Msg("error creating task")
+				log.Error().Err(err).Str("path", filePath).Str("route", "serve").Str("task", TypeImageThumbnail).Msg("error creating task")
 			}
 			info, err := AsynqClient.Enqueue(task)
 			if err != nil {
-				log.Error().Err(err).Str("path", filePath).Str("route", "serve").Str("enqueue", TypeImageOptimization).Msg("error enqueuing task")
+				log.Error().Err(err).Str("path", filePath).Str("route", "serve").Str("enqueue", TypeImageThumbnail).Msg("error enqueuing task")
 			}
 
-			log.Info().Str("id", info.ID).Str("task", TypeImageOptimization).Msg("queued task")
+			log.Info().Str("id", info.ID).Str("task", TypeImageThumbnail).Msg("queued task")
 		}
-
-		task, err := NewImageThumbnailTask(filePath)
-		if err != nil {
-			log.Error().Err(err).Str("path", filePath).Str("route", "serve").Str("task", TypeImageThumbnail).Msg("error creating task")
-		}
-		info, err := AsynqClient.Enqueue(task)
-		if err != nil {
-			log.Error().Err(err).Str("path", filePath).Str("route", "serve").Str("enqueue", TypeImageThumbnail).Msg("error enqueuing task")
-		}
-
-		log.Info().Str("id", info.ID).Str("task", TypeImageThumbnail).Msg("queued task")
 	} else if strings.Contains(mType, "video") {
 		if Config.CanConvertHLS {
 			go func() {
