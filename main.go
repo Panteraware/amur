@@ -50,9 +50,11 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
 
-	go func() {
-		NewAsynqServer()
-	}()
+	if Config.UseRedis {
+		go func() {
+			NewAsynqServer()
+		}()
+	}
 
 	go func() {
 		if err := e.Start(fmt.Sprintf(":%d", Config.Port)); err != nil && !errors.Is(err, http.ErrServerClosed) {
