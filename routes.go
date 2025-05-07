@@ -24,6 +24,12 @@ func ServeFile(c echo.Context) error {
 
 	filePath = path.Clean(filePath + result)
 
+	exists := Exists(filePath)
+
+	if !exists {
+		return c.NoContent(404)
+	}
+
 	mType := http.DetectContentType(ReadLimitedBytes(filePath, 512))
 
 	if strings.Contains(mType, "image") {
