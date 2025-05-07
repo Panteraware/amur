@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"github.com/nickalie/go-webpbin"
 	"github.com/rs/zerolog/log"
@@ -13,6 +14,15 @@ import (
 	"path/filepath"
 	"strings"
 )
+
+func Exists(path string) bool {
+	_, err := os.Stat(path)
+
+	if errors.Is(err, os.ErrNotExist) {
+		return false
+	}
+	return true
+}
 
 func ResizeImage(filePath string, width int, height int) (string, error) {
 	input, err := os.Open(filePath)
