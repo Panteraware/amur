@@ -1,27 +1,43 @@
 FROM golang:1.24 AS builder
 
-# Define the build arguments
+# define the build arguments
 ARG GIT_VERSION
 ARG GIT_COMMIT
 ARG GIT_DATE
 
-# Optionally set them as environment variables
 ENV GIT_VERSION=${GIT_VERSION}
 ENV GIT_COMMIT=${GIT_COMMIT}
 ENV GIT_DATE=${GIT_DATE}
 
-WORKDIR /go/src/app
-COPY . .
-RUN go build -o amur -ldflags="-X 'main.version=${GIT_VERSION}' -X 'main.commit=${GIT_COMMIT}' -X 'main.date=${GIT_DATE}'" .
+# build everything
+COPY . /.
+RUN CGO_ENABLED=0 go build -o /amur -ldflags="-X 'main.version=${GIT_VERSION}' -X 'main.commit=${GIT_COMMIT}' -X 'main.date=${GIT_DATE}'" /.
 
-FROM debian:bookworm
+FROM debian:bookworm AS packages
 
+# update apt and install dependencies
 RUN apt-get update
 RUN apt-get install -y webp ffmpeg
 
+FROM cgr.dev/chainguard/static@sha256:288b818c1b3dd89776d176f07f5f671b118fe836c4d80ec2cc3299b596fe71b7
+
+# Copy binary
+COPY --from=builder /amur /usr/bin/
+
+# Copy WebP binaries
+COPY --from=packages /usr/bin/cwebp /usr/bin/
+COPY --from=packages /usr/bin/dwebp /usr/bin/
+COPY --from=packages /usr/bin/img2webp /usr/bin/
+COPY --from=packages /usr/bin/gif2webp /usr/bin/
+COPY --from=packages /usr/bin/vwebp /usr/bin/
+COPY --from=packages /usr/bin/webpinfo /usr/bin/
+COPY --from=packages /usr/bin/webpmux /usr/bin/
+
+# Copy ffmpeg binaries
+COPY --from=packages /usr/bin/ffmpeg /usr/bin/
+COPY --from=packages /usr/bin/ffprobe /usr/bin/
+
 ENV SKIP_DOWNLOAD=true
 ENV VENDOR_PATH=/usr/bin
-
-COPY --from=builder /go/src/app/amur /usr/bin/amur
 
 ENTRYPOINT ["/usr/bin/amur"]
