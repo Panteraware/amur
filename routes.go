@@ -57,6 +57,20 @@ func ServeFile(c echo.Context) error {
 			}
 
 			log.Info().Str("id", info.ID).Str("task", TypeImageThumbnail).Msg("queued task")
+		} else {
+			if !strings.HasSuffix(filePath, ".webp") {
+				_, err := EncodeWebP(filePath)
+				if err != nil {
+					log.Error().Err(err).Str("path", filePath).Str("route", "serve").Msg("error encoding webp")
+					return err
+				}
+			}
+
+			_, err := ThumbnailImage(filePath)
+			if err != nil {
+				log.Error().Err(err).Str("path", filePath).Str("route", "serve").Msg("error thumbnailing image")
+				return err
+			}
 		}
 	} else if strings.Contains(mType, "video") {
 		if Config.CanConvertHLS {
