@@ -45,7 +45,7 @@ func main() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.CORSWithConfig(Config.Cors))
 
-	log.Info().Str("version", version).Str("commit", commit).Str("date", date)
+	log.Info().Str("version", version).Str("commit", commit).Str("date", date).Msg("")
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
@@ -58,7 +58,7 @@ func main() {
 
 	go func() {
 		if err := e.Start(fmt.Sprintf(":%d", Config.Port)); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			e.Logger.Fatal("shutting down the server")
+			log.Fatal().Msg("error starting server")
 		}
 	}()
 
@@ -66,6 +66,8 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	if err := e.Shutdown(ctx); err != nil {
-		e.Logger.Fatal(err)
+		log.Fatal().Err(err).Msg("error shutting down server")
+	} else {
+		log.Info().Msg("shutting down server")
 	}
 }
