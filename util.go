@@ -204,6 +204,11 @@ func GetVideoScales(size int) []string {
 }
 
 func ReadLimitedBytes(path string, n int) []byte {
+	exists := Exists(path)
+	if !exists {
+		return make([]byte, 0)
+	}
+
 	file, err := os.Open(path)
 
 	if err != nil {
