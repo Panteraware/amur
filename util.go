@@ -3,10 +3,8 @@ package main
 import (
 	"errors"
 	"fmt"
-	"github.com/nickalie/go-webpbin"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/image/draw"
-	"golang.org/x/image/webp"
 	"image"
 	"image/jpeg"
 	"image/png"
@@ -57,12 +55,6 @@ func ResizeImage(filePath string, width int, height int) (string, error) {
 			log.Error().Err(err).Str("path", filePath).Str("util", "resize").Msg("failed to decode jpeg")
 			return "", err
 		}
-	} else if fileExt == ".webp" {
-		src, err = webp.Decode(input)
-		if err != nil {
-			log.Error().Err(err).Err(err).Str("path", filePath).Str("util", "resize").Msg("failed to decode webp")
-			return "", err
-		}
 	}
 
 	dst := image.NewRGBA(image.Rect(0, 0, width, height))
@@ -79,12 +71,6 @@ func ResizeImage(filePath string, width int, height int) (string, error) {
 		err := jpeg.Encode(output, dst, nil)
 		if err != nil {
 			log.Error().Err(err).Str("path", filePath).Str("util", "resize").Msg("failed to encode jpeg")
-			return "", err
-		}
-	} else if fileExt == ".webp" {
-		err := webpbin.Encode(output, dst)
-		if err != nil {
-			log.Error().Err(err).Str("path", filePath).Str("util", "resize").Msg("failed to encode webp")
 			return "", err
 		}
 	}
@@ -129,12 +115,6 @@ func ThumbnailImage(filePath string) (string, error) {
 			log.Error().Err(err).Str("path", filePath).Str("util", "resize").Msg("failed to decode jpeg")
 			return "", err
 		}
-	} else if fileExt == ".webp" {
-		src, err = webp.Decode(input)
-		if err != nil {
-			log.Error().Err(err).Err(err).Str("path", filePath).Str("util", "resize").Msg("failed to decode webp")
-			return "", err
-		}
 	}
 
 	dst := image.NewRGBA(image.Rect(0, 0, src.Bounds().Max.X/2, src.Bounds().Max.Y/2))
@@ -151,12 +131,6 @@ func ThumbnailImage(filePath string) (string, error) {
 		err := jpeg.Encode(output, dst, nil)
 		if err != nil {
 			log.Error().Err(err).Str("path", filePath).Str("util", "resize").Msg("failed to encode jpeg")
-			return "", err
-		}
-	} else if fileExt == ".webp" {
-		err := webpbin.Encode(output, dst)
-		if err != nil {
-			log.Error().Err(err).Str("path", filePath).Str("util", "resize").Msg("failed to encode webp")
 			return "", err
 		}
 	}
