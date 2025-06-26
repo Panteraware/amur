@@ -50,6 +50,8 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
 
+	go WatchFolder()
+
 	if Config.UseRedis {
 		go func() {
 			NewAsynqServer()
