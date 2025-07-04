@@ -12,6 +12,8 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"runtime"
+	"strconv"
 	"time"
 )
 
@@ -36,9 +38,18 @@ func main() {
 
 	e := echo.New()
 
+	// Routes
 	e.RouteNotFound("/*", ServeFile)
 	e.POST("/upload", UploadFile)
+	e.GET("/health", func(c echo.Context) error {
+		var mem runtime.MemStats
+		runtime.ReadMemStats(&mem)
 
+		log.Info().Str("version", version).Str("goroutines", strconv.Itoa(runtime.NumGoroutine())).Str("cpu", strconv.Itoa(runtime.NumCPU())).Str("allocated_memory", ByteCountSI(int64(mem.TotalAlloc))).Str("memory_allocations", ByteCountSI(int64(mem.Mallocs))).Msg("Health check")
+		return c.String(http.StatusOK, "ok")
+	})
+
+	// Middleware
 	e.IPExtractor = echo.ExtractIPFromXFFHeader()
 	e.Use(middleware.RequestID())
 	e.Use(middleware.Recover())
@@ -46,7 +57,6 @@ func main() {
 	e.Use(middleware.CORSWithConfig(Config.Cors))
 
 	log.Info().Str("version", version).Str("commit", commit).Str("date", date).Msg("")
-
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
 
