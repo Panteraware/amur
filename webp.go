@@ -30,9 +30,10 @@ func EncodeWebP(filePath string) (*string, error) {
 	}
 	defer output.Close()
 
-	err = exec.Command("cwebp", filePath, "-o", fileName).Run()
+	cmd := exec.Command("/usr/bin/cwebp", filePath, "-o", fileName)
+	o, err := cmd.CombinedOutput()
 	if err != nil {
-		log.Error().Err(err).Str("file", filePath).Msg("failed to encode webp file")
+		log.Error().Err(err).Str("output", string(o)).Str("file", filePath).Msg("failed to encode webp file")
 	}
 
 	return &fileName, nil
