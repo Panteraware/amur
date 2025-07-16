@@ -61,6 +61,7 @@ func main() {
 	defer stop()
 
 	go WatchFolder()
+	go CronInit()
 
 	if Config.UseRedis {
 		go func() {
