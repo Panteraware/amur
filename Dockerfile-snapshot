@@ -15,29 +15,42 @@ RUN CGO_ENABLED=0 go build -o /amur -ldflags="-X 'main.version=${GIT_VERSION}' -
 
 FROM debian:bookworm AS packages
 
+# create neccessary folder structure
+RUN mkdir -p /export/usr/bin
+
 # update apt and install dependencies
 RUN apt-get update
 RUN apt-get install -y webp ffmpeg
 
+# copy WebP binaries
+RUN cp /usr/bin/cwebp /export/usr/bin/
+RUN cp /usr/bin/dwebp /export/usr/bin/
+RUN cp /usr/bin/img2webp /export/usr/bin/
+RUN cp /usr/bin/gif2webp /export/usr/bin/
+RUN cp /usr/bin/vwebp /export/usr/bin/
+RUN cp /usr/bin/webpinfo /export/usr/bin/
+RUN cp /usr/bin/webpmux /export/usr/bin/
+
+# copy ffmpeg binaries
+RUN cp /usr/bin/ffmpeg /export/usr/bin/
+RUN cp /usr/bin/ffprobe /export/usr/bin/
+
+# copy libraries
+RUN ldd /usr/bin/cwebp | awk '{print $3}' | grep '^/' | xargs -I '{}' cp --parents -v '{}' /export/
+RUN cp --parents "$(ldd /usr/bin/cwebp | grep 'ld-linux' | awk '{print $1}')" /export/
+
+RUN ldd /usr/bin/ffmpeg | awk '{print $3}' | grep '^/' | xargs -I '{}' cp --parents -v '{}' /export/
+RUN cp --parents "$(ldd /usr/bin/ffmpeg | grep 'ld-linux' | awk '{print $1}')" /export/
+
+RUN ldd /usr/bin/ffprobe | awk '{print $3}' | grep '^/' | xargs -I '{}' cp --parents -v '{}' /export/
+RUN cp --parents "$(ldd /usr/bin/ffprobe | grep 'ld-linux' | awk '{print $1}')" /export/
+
 FROM cgr.dev/chainguard/static@sha256:288b818c1b3dd89776d176f07f5f671b118fe836c4d80ec2cc3299b596fe71b7
 
-# Copy binary
-COPY --from=builder /amur /usr/bin/
+# copy binary
+COPY /amur /usr/bin/amur
 
-# Copy WebP binaries
-COPY --from=packages /usr/bin/cwebp /usr/bin/
-COPY --from=packages /usr/bin/dwebp /usr/bin/
-COPY --from=packages /usr/bin/img2webp /usr/bin/
-COPY --from=packages /usr/bin/gif2webp /usr/bin/
-COPY --from=packages /usr/bin/vwebp /usr/bin/
-COPY --from=packages /usr/bin/webpinfo /usr/bin/
-COPY --from=packages /usr/bin/webpmux /usr/bin/
-
-# Copy ffmpeg binaries
-COPY --from=packages /usr/bin/ffmpeg /usr/bin/
-COPY --from=packages /usr/bin/ffprobe /usr/bin/
-
-ENV SKIP_DOWNLOAD=true
-ENV VENDOR_PATH=/usr/bin
+# copy binaries and libraries
+COPY --from=packages /export/ /
 
 ENTRYPOINT ["/usr/bin/amur"]
