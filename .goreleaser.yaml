@@ -12,8 +12,18 @@ builds:
       - CGO_ENABLED=0
     goos:
       - linux
+      - windows
+      - darwin
+      - freebsd
+      - openbsd
+      - netbsd
     goarch:
       - amd64
+      - arm
+      - arm64
+    goarm:
+      - 6
+      - 7
 
 dockers:
   - image_templates:
@@ -33,34 +43,14 @@ dockers:
       - --label=io.artifacthub.package.readme-url=https://raw.githubusercontent.com/panteraware/amur/main/README.md
       - --label=io.artifacthub.package.keywords=golang,image,cdn,uploader
       - --label=io.artifacthub.package.license=MIT
-  # - image_templates:
-  #     - "ghcr.io/panteraware/{{ .ProjectName }}:{{ .Version }}-arm64"
-  #   goarch: arm64
-  #   dockerfile: Dockerfile
-  #   use: buildx
-  #   build_flag_templates:
-  #     - --platform=linux/arm64/v8
-  #     - --label=org.opencontainers.image.licenses=MIT
-  #     - --label=org.opencontainers.image.description=amur
-  #     - --label=org.opencontainers.image.created={{.Date}}
-  #     - --label=org.opencontainers.image.name={{.ProjectName}}
-  #     - --label=org.opencontainers.image.revision={{.FullCommit}}
-  #     - --label=org.opencontainers.image.version={{.Version}}
-  #     - --label=org.opencontainers.image.source={{.GitURL}}
-  #     - --label=io.artifacthub.package.maintainers=[{"name":"Panteraware","email":"git@panteraware.com"}]
-  #     - --label=io.artifacthub.package.readme-url=https://raw.githubusercontent.com/panteraware/amur/main/README.md
-  #     - --label=io.artifacthub.package.keywords=golang,image,cdn,uploader
-  #     - --label=io.artifacthub.package.license=MIT
 
 docker_manifests:
   - name_template: 'ghcr.io/panteraware/{{ .ProjectName }}:{{ .Version }}'
     image_templates:
       - 'ghcr.io/panteraware/{{ .ProjectName }}:{{ .Version }}-amd64'
-      # - 'ghcr.io/panteraware/{{ .ProjectName }}:{{ .Version }}-arm64'
   - name_template: 'ghcr.io/panteraware/{{ .ProjectName }}:latest'
     image_templates:
       - 'ghcr.io/panteraware/{{ .ProjectName }}:{{ .Version }}-amd64'
-      # - 'ghcr.io/panteraware/{{ .ProjectName }}:{{ .Version }}-arm64'
 
 source:
   enabled: true
