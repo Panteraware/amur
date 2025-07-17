@@ -26,16 +26,20 @@ func CheckFiles() {
 		}
 
 		if !info.IsDir() {
-			exists := Exists(strings.Replace(p, path.Ext(p), ".webp", -1))
+			webp := strings.Replace(p, path.Ext(p), ".webp", -1)
+			exists := Exists(webp)
+			in, _ := os.Stat(webp)
 
-			if !exists {
+			if (!exists || in.Size() == 0) && CheckFileExtension(p) == "image" {
 				file, err2 := EncodeWebP(p)
 				if err2 != nil {
-					log.Error().Err(err2)
+					log.Error().Err(err2).Msg("failed to encode file")
 					return nil
 				}
 
 				log.Info().Str("file", *file).Msg("encoded image")
+
+				return nil
 			}
 		}
 
