@@ -4,17 +4,18 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/joho/godotenv"
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
 	"net/http"
 	"os"
 	"os/signal"
 	"runtime"
 	"strconv"
 	"time"
+
+	"github.com/joho/godotenv"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 )
 
 var (
@@ -53,8 +54,73 @@ func main() {
 	e.IPExtractor = echo.ExtractIPFromXFFHeader()
 	e.Use(middleware.RequestID())
 	e.Use(middleware.Recover())
-	e.Use(middleware.Logger())
 	e.Use(middleware.CORSWithConfig(Config.Cors))
+	e.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
+		LogURI:           true,
+		LogStatus:        true,
+		LogError:         true,
+		LogHost:          true,
+		LogLatency:       true,
+		LogMethod:        true,
+		LogContentLength: true,
+		LogProtocol:      true,
+		LogReferer:       true,
+		LogUserAgent:     true,
+		LogRemoteIP:      true,
+		LogRequestID:     true,
+		LogResponseSize:  true,
+		LogURIPath:       true,
+		LogRoutePath:     true,
+		LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
+			ext := HasExtension(v.URI)
+			route := ""
+
+			if !ext {
+				route = v.URI
+			}
+
+			if v.Error != nil {
+				log.Error().
+					Err(v.Error).
+					Str("URI", v.URI).
+					Int("status", v.Status).
+					Str("method", v.Method).
+					Str("remote_ip", v.RemoteIP).
+					Str("host", v.Host).
+					Str("uri", v.URI).
+					Str("protocol", v.Protocol).
+					Str("referer", v.Referer).
+					Str("user_agent", v.UserAgent).
+					Str("id", v.RequestID).
+					Int("latency", int(v.Latency.Nanoseconds())).
+					Str("latency_human", v.Latency.String()).
+					Int("bytes_in", int(c.Request().ContentLength)).
+					Int("bytes_out", int(v.ResponseSize)).
+					Str("route", route).
+					Msg("error")
+			} else {
+				log.Info().
+					Str("URI", v.URI).
+					Int("status", v.Status).
+					Str("method", v.Method).
+					Str("remote_ip", v.RemoteIP).
+					Str("host", v.Host).
+					Str("uri", v.URI).
+					Str("protocol", v.Protocol).
+					Str("referer", v.Referer).
+					Str("user_agent", v.UserAgent).
+					Str("id", v.RequestID).
+					Int("latency", int(v.Latency.Nanoseconds())).
+					Str("latency_human", v.Latency.String()).
+					Int("bytes_in", int(c.Request().ContentLength)).
+					Int("bytes_out", int(v.ResponseSize)).
+					Str("route", route).
+					Msg("request")
+			}
+
+			return nil
+		},
+	}))
 
 	log.Info().Str("version", version).Str("commit", commit).Str("date", date).Msg("")
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
