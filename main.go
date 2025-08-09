@@ -84,6 +84,7 @@ func main() {
 					Err(v.Error).
 					Str("URI", v.URI).
 					Int("status", v.Status).
+					Str("status_text", http.StatusText(v.Status)).
 					Str("method", v.Method).
 					Str("remote_ip", v.RemoteIP).
 					Str("host", v.Host).
@@ -95,13 +96,19 @@ func main() {
 					Int("latency", int(v.Latency.Nanoseconds())).
 					Str("latency_human", v.Latency.String()).
 					Int("bytes_in", int(c.Request().ContentLength)).
+					Str("bytes_in_human", ByteCountSI(c.Request().ContentLength)).
 					Int("bytes_out", int(v.ResponseSize)).
+					Str("bytes_out_human", ByteCountSI(v.ResponseSize)).
 					Str("route", route).
+					Str("server_version", version).
+					Str("server_commit", commit).
+					Str("server_build_date", date).
 					Msg("error")
 			} else {
 				log.Info().
 					Str("URI", v.URI).
 					Int("status", v.Status).
+					Str("status_text", http.StatusText(v.Status)).
 					Str("method", v.Method).
 					Str("remote_ip", v.RemoteIP).
 					Str("host", v.Host).
@@ -113,8 +120,13 @@ func main() {
 					Int("latency", int(v.Latency.Nanoseconds())).
 					Str("latency_human", v.Latency.String()).
 					Int("bytes_in", int(c.Request().ContentLength)).
+					Str("bytes_in_human", ByteCountSI(c.Request().ContentLength)).
 					Int("bytes_out", int(v.ResponseSize)).
+					Str("bytes_out_human", ByteCountSI(v.ResponseSize)).
 					Str("route", route).
+					Str("server_version", version).
+					Str("server_commit", commit).
+					Str("server_build_date", date).
 					Msg("request")
 			}
 
