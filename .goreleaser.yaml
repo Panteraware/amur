@@ -4,9 +4,6 @@ before:
   hooks:
     - go mod tidy
 
-archives:
-  - name_template: "{{ .ProjectName }}_{{ .Version }}.{{ .Os }}-{{ .Arch }}"
-
 builds:
   - env:
       - CGO_ENABLED=0
