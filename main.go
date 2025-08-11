@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"crypto/subtle"
 	"errors"
 	"fmt"
 	"net/http"
@@ -12,6 +13,7 @@ import (
 	"time"
 
 	"github.com/joho/godotenv"
+	"github.com/labstack/echo-contrib/echoprometheus"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/rs/zerolog"
@@ -39,22 +41,30 @@ func main() {
 
 	e := echo.New()
 
-	// Routes
-	e.RouteNotFound("/*", ServeFile)
-	e.POST("/upload", UploadFile)
-	e.GET("/health", func(c echo.Context) error {
-		var mem runtime.MemStats
-		runtime.ReadMemStats(&mem)
-
-		log.Info().Str("version", version).Str("goroutines", strconv.Itoa(runtime.NumGoroutine())).Str("cpu", strconv.Itoa(runtime.NumCPU())).Str("allocated_memory", ByteCountSI(int64(mem.TotalAlloc))).Str("memory_allocations", ByteCountSI(int64(mem.Mallocs))).Msg("Health check")
-		return c.String(http.StatusOK, "ok")
-	})
-
 	// Middleware
 	e.IPExtractor = echo.ExtractIPFromXFFHeader()
 	e.Use(middleware.RequestID())
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORSWithConfig(Config.Cors))
+	e.Use(middleware.BasicAuthWithConfig(middleware.BasicAuthConfig{
+		Skipper: func(c echo.Context) bool {
+			// skip for all routes but metrics
+			if c.Path() != "/metrics" {
+				return true
+			}
+
+			return false
+		},
+		Validator: func(username, password string, c echo.Context) (bool, error) {
+			if subtle.ConstantTimeCompare([]byte(username), []byte(Config.Prometheus.Username)) == 1 &&
+				subtle.ConstantTimeCompare([]byte(password), []byte(Config.Prometheus.Password)) == 1 {
+				return true, nil
+			}
+
+			return false, nil
+		},
+	}))
+	e.Use(echoprometheus.NewMiddleware("amur"))
 	e.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
 		LogURI:           true,
 		LogStatus:        true,
@@ -133,6 +143,18 @@ func main() {
 			return nil
 		},
 	}))
+
+	// Routes
+	e.RouteNotFound("/*", ServeFile)
+	e.POST("/upload", UploadFile)
+	e.GET("/metrics", echoprometheus.NewHandler())
+	e.GET("/health", func(c echo.Context) error {
+		var mem runtime.MemStats
+		runtime.ReadMemStats(&mem)
+
+		log.Info().Str("version", version).Str("goroutines", strconv.Itoa(runtime.NumGoroutine())).Str("cpu", strconv.Itoa(runtime.NumCPU())).Str("allocated_memory", ByteCountSI(int64(mem.TotalAlloc))).Str("memory_allocations", ByteCountSI(int64(mem.Mallocs))).Msg("Health check")
+		return c.String(http.StatusOK, "ok")
+	})
 
 	log.Info().Str("version", version).Str("commit", commit).Str("date", date).Msg("")
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
