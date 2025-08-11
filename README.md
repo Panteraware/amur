@@ -26,6 +26,7 @@ Go Echo Rest API CDN with WebP conversion, image resizing, video processing, and
 - Complete structured logs (compatible with alloy, promtail, etc.)
 - Healthcheck route
 - Graceful shutdown
+- Prometheus metrics
 
 ## ENV
 These are all default values so you don't have to define them all yourself.
@@ -46,6 +47,8 @@ These are all default values so you don't have to define them all yourself.
 | CORS_ALLOW_ORIGINS     | localhost                      | *string   | Which hosts should be allowed through CORS                                   |
 | CORS_ALLOW_HEADERS     | GET,HEAD,POST,PUT,PATCH,DELETE | *string   | Request types allowed through CORS                                           |
 | CORS_ALLOW_CREDENTIALS | true                           | *boolean  | Allow cookies                                                                |
+| PROM_USERNAME          | admin                          | *string   | Username to use with prometheus                                              |
+| PROM_PASSWORD          |                                | *string   | Password for prometheus, if left empty then prometheus is disabled           |
 
 ``*`` Purely optional variables that aren't needed for basic functionality.
 
