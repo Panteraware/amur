@@ -1,11 +1,15 @@
 package main
 
 import (
+	"crypto/rand"
+	"encoding/base64"
 	"fmt"
-	"github.com/labstack/echo/v4/middleware"
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/labstack/echo/v4/middleware"
+	"github.com/rs/zerolog/log"
 )
 
 type ConfigStruct struct {
@@ -22,6 +26,12 @@ type ConfigStruct struct {
 	UploadKey     string
 	PublicFolder  string
 	Cors          middleware.CORSConfig
+	Prometheus    prom
+}
+
+type prom struct {
+	Username string
+	Password string
 }
 
 func ConfigNew() {
@@ -43,6 +53,10 @@ func ConfigNew() {
 			AllowHeaders:     strings.Split(getEnv("CORS_ALLOW_HEADERS", "GET,HEAD,POST,PUT,PATCH,DELETE"), ","),
 			AllowCredentials: getEnvAsBool("CORS_ALLOW_CREDENTIALS", true),
 		},
+		Prometheus: prom{
+			Username: getEnv("PROM_USERNAME", "admin"),
+			Password: getEnv("PROM_PASSWORD", ""),
+		},
 	}
 
 	if strings.Contains(Config.Domain, "localhost") {
@@ -51,6 +65,18 @@ func ConfigNew() {
 		Config.Domain = fmt.Sprintf("https://%s", Config.Domain)
 	}
 
+	if getEnv("PROM_PASSWORD", "") == "" {
+		// Essentially create a really long unguessable password to protect metrics
+		b := make([]byte, 48)
+		_, err := rand.Read(b)
+		if err != nil {
+			return
+		}
+
+		Config.Prometheus.Password = base64.StdEncoding.EncodeToString(b)
+
+		log.Info().Msg("no prometheus password provided so prometheus is disabled")
+	}
 }
 
 var Config *ConfigStruct
