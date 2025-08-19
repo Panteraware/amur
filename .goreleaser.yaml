@@ -24,7 +24,7 @@ builds:
 
 dockers:
   - image_templates:
-      - "ghcr.io/panteraware/{{ .ProjectName }}:{{ .Version }}-amd64"
+      - "ghcr.io/maxpeterkaya/{{ .ProjectName }}:{{ .Version }}-amd64"
     dockerfile: Dockerfile
     use: buildx
     build_flag_templates:
@@ -36,18 +36,18 @@ dockers:
       - --label=org.opencontainers.image.revision={{.FullCommit}}
       - --label=org.opencontainers.image.version={{.Version}}
       - --label=org.opencontainers.image.source={{.GitURL}}
-      - --label=io.artifacthub.package.maintainers=[{"name":"Panteraware","email":"git@panteraware.com"}]
-      - --label=io.artifacthub.package.readme-url=https://raw.githubusercontent.com/panteraware/amur/main/README.md
-      - --label=io.artifacthub.package.keywords=golang,image,cdn,uploader
+      - --label=io.artifacthub.package.maintainers=[{"name":"maxpeterkaya","email":"git@maxpeterkaya.com"}]
+      - --label=io.artifacthub.package.readme-url=https://raw.githubusercontent.com/maxpeterkaya/amur/main/README.md
+      - --label=io.artifacthub.package.keywords=golang,image,uploader,redis,caching,streaming,performance,hls,cdn,high-performance,webp,media-delivery,image-optimization,content-delivery,thumbnail-generation,go-echo,video-optimization,lightweight-cdn,load-time-reduction,media-optimization
       - --label=io.artifacthub.package.license=MIT
 
 docker_manifests:
-  - name_template: 'ghcr.io/panteraware/{{ .ProjectName }}:{{ .Version }}'
+  - name_template: 'ghcr.io/maxpeterkaya/{{ .ProjectName }}:{{ .Version }}'
     image_templates:
-      - 'ghcr.io/panteraware/{{ .ProjectName }}:{{ .Version }}-amd64'
-  - name_template: 'ghcr.io/panteraware/{{ .ProjectName }}:latest'
+      - 'ghcr.io/maxpeterkaya/{{ .ProjectName }}:{{ .Version }}-amd64'
+  - name_template: 'ghcr.io/maxpeterkaya/{{ .ProjectName }}:latest'
     image_templates:
-      - 'ghcr.io/panteraware/{{ .ProjectName }}:{{ .Version }}-amd64'
+      - 'ghcr.io/maxpeterkaya/{{ .ProjectName }}:{{ .Version }}-amd64'
 
 source:
   enabled: true
